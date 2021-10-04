@@ -17,6 +17,8 @@ published: false # 公開設定（falseにすると下書き）
 
 # 着眼点
 ## 散布図のプロットの動きを残像に残す
+
+![](/images/scatter-plot-with-time-series.png)
 https://public.tableau.com/views/scatter-plot-with-time-series/sample?:language=ja-JP&:display_count=n&:origin=viz_share_link
 
 # 解決策
