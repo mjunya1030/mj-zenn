@@ -1,5 +1,5 @@
 ---
-title: "tableauで時間の軸の見える散布図を作る" # 記事のタイトル
+title: "tableauで時間的変化の見える散布図を作る" # 記事のタイトル
 emoji: "📈" # アイキャッチとして使われる絵文字（1文字だけ）
 type: "tech" # tech: 技術記事 / idea: アイデア記事
 topics: ["BigQuery","Tableau"] # タグ。["markdown", "rust", "aws"]のように指定する
