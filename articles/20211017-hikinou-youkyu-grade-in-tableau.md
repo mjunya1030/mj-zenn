@@ -11,8 +11,9 @@ published: false # 公開設定（falseにすると下書き）
 tableau public で公開したので、ぜひご利用ください。(非公式のツールになります)
 https://public.tableau.com/app/profile/junya.morita/viz/tableau_16343850335800/Tableau
 
-*イメージ*
+
 ![](/images/hikino-yokyu-tableau-ver.png)
+*tableau版非機能要求グレード*
 # 非機能要求グレード2018 とは
 
 IPA で公開されている文書で、システムの非機能要求を定義する際の指針となるものです。
