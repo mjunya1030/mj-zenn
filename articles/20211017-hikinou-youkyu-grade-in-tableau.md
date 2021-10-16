@@ -8,7 +8,7 @@ published: false # 公開設定（falseにすると下書き）
 
 # tableau版非機能要求グレードを公開しました
 
-tableau public で公開したので、ぜひご利用ください。
+tableau public で公開したので、ぜひご利用ください。(非公式のツールになります)
 https://public.tableau.com/app/profile/junya.morita/viz/tableau_16343850335800/Tableau
 
 *イメージ*
