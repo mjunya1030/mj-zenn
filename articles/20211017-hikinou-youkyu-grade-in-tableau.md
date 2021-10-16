@@ -6,14 +6,14 @@ topics: ["IPA","Tableau", "BI"] # タグ。["markdown", "rust", "aws"]のよう�
 published: false # 公開設定（falseにすると下書き）
 ---
 
-# tableau版非機能要求グレードを公開しました
+# 非機能要求グレードtableau版を公開しました
 
 tableau public で公開したので、ぜひご利用ください。(非公式のツールになります)
 https://public.tableau.com/app/profile/junya.morita/viz/tableau_16343850335800/Tableau
 
 
 ![](/images/hikino-yokyu-tableau-ver.png)
-*tableau版非機能要求グレード*
+*非機能要求グレードtableau版*
 # 非機能要求グレード2018 とは
 
 IPA で公開されている文書で、システムの非機能要求を定義する際の指針となるものです。
@@ -41,7 +41,7 @@ https://www.ipa.go.jp/sec/softwareengineering/std/ent03-b.html
 
 そこで、Excel よりもフィルタしやすく、閲覧性も向上させた非機能要求グレードを、オンラインで共有することにしました。
 
-# 非機能要求グレード tableau 版の使い方
+# 非機能要求グレードtableau版の使い方
 このツールは、多数ある非機能要求の中から、求めている情報を素早く見つけられることを目的に作られています。想定利用シーンを元に、利用イメージを説明します。
 
 *シーン：MAU=100名程度のECサイトの検索APIを改修する際の、性能要求を検討したい。*
