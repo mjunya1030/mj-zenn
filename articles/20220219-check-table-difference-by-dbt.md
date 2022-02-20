@@ -8,7 +8,7 @@ published: false # 公開設定（falseにすると下書き）
 
 ## サマリ
 
-データパイプラインの開発をしていると、出力されたテーブルが合致することを確認したいことがあります。例えば、既存のクエリの書き方が悪く性能劣化を起こしている場合には、性能を改善するためにクエリを書き換えますが、書き換えたクエリに誤りがないか確認する必要があります。  
+サマリです。
 
 
 ## モチベーション
@@ -24,7 +24,30 @@ published: false # 公開設定（falseにすると下書き）
 この記事では dbt によって 上記検証作業をCI上で実行できる仕組みを紹介します。  
 
 ## アプローチ
-こんな感じで作ってます
+dbt の custom generic test という仕組みを使って作ります。
+
+### sql を使ったテーブル同士の比較
+テーブルが完全合致するかどうかは、以下の SQL を実行し、結果が0件であるかをチェックすれば確認できます。
+
+```sql
+(  
+    select * from table_A
+    except distinct
+    select * from table_B
+) union all (
+    select * from table_B
+    except distinct
+    select * from table_A
+)
+```
+
+これを custom generic test で動くようにします。
+
+### custom generic test
+custom generic test については以下が参考になります。
+https://docs.getdbt.com/docs/guides/writing-custom-generic-tests
+
+
 
 ## 実施結果
 こんな感じでチェックできてます
