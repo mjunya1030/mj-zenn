@@ -50,12 +50,13 @@ https://github.com/dbt-labs/dbt-project-evaluator
   - エクスポージャ 親のマテリアライゼーション
 
 
-## 事前準備
+## 事前準備と修正結果
 
 早速プロジェクトを作成しました。ベストプラクティスを読んだ上で、全部違反している project がこちらです。20個のベストプラクティスにどう違反してるかの対応も記載しています。
 
 
 ![](/images/project-evaluator/pipeline-before.png)
+![](/images/project-evaluator/pipeline-before-2.png)
 
 <参考リポジトリ>
 https://github.com/mjunya1030/ga4-dbt-template
@@ -64,6 +65,14 @@ https://github.com/mjunya1030/ga4-dbt-template
 このパイプラインは、この zenn のアクセスログを解析している Google Analytics のログを BigQuery に蓄積したものをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理です。
 やりたいことはシンプルですが、全て違反するように作ったため、かなり見辛いパイプラインになってると思います。
 
+
+## 修正結果
+
+下図が dbt-project-evaluator を用いて修正をした後のパイプラインです。テーブルの数が減って、シンプルになったと思いますが、いかがでしょうか。
+
+![](/images/project-evaluator/pipeline-after.png)
+
+修正の流れを次の章から解説して行きます。
 
 ## dbt project evaluator の適用
 
@@ -75,160 +84,20 @@ $ poetry run dbt test --select package:dbt_project_evaluator
 13:43:06  Running with dbt=1.3.1
 13:43:06  Found 48 models, 36 tests, 0 snapshots, 0 analyses, 560 macros, 0 operations, 1 seed file, 3 sources, 1 exposure, 0 metrics
 13:43:06  
-13:43:10  Concurrency: 4 threads (target='target')
-13:43:10  
-13:43:10  1 of 20 START test dbt_utils_accepted_range_fct_chained_views_dependencies_distance__False___var_chained_views_threshold_  [RUN]
-13:43:10  2 of 20 START test dbt_utils_accepted_range_fct_documentation_coverage_documentation_coverage_pct___var_documentation_coverage_target_  [RUN]
-13:43:10  3 of 20 START test dbt_utils_accepted_range_fct_test_coverage_test_coverage_pct___var_test_coverage_target_  [RUN]
-13:43:10  4 of 20 START test is_empty_fct_direct_join_to_source_ ......................... [RUN]
-13:43:11  4 of 20 FAIL 2 is_empty_fct_direct_join_to_source_ ............................. [FAIL 2 in 1.08s]
-13:43:11  5 of 20 START test is_empty_fct_exposure_parents_materializations_ ............. [RUN]
-13:43:11  1 of 20 FAIL 1 dbt_utils_accepted_range_fct_chained_views_dependencies_distance__False___var_chained_views_threshold_  [FAIL 1 in 1.12s]
-13:43:11  6 of 20 START test is_empty_fct_marts_or_intermediate_dependent_on_source_ ..... [RUN]
-13:43:11  3 of 20 FAIL 1 dbt_utils_accepted_range_fct_test_coverage_test_coverage_pct___var_test_coverage_target_  [FAIL 1 in 1.49s]
-13:43:11  7 of 20 START test is_empty_fct_missing_primary_key_tests_ ..................... [RUN]
-13:43:11  2 of 20 FAIL 1 dbt_utils_accepted_range_fct_documentation_coverage_documentation_coverage_pct___var_documentation_coverage_target_  [FAIL 1 in 1.54s]
-13:43:11  8 of 20 START test is_empty_fct_model_directories_ ............................. [RUN]
-13:43:12  6 of 20 FAIL 1 is_empty_fct_marts_or_intermediate_dependent_on_source_ ......... [FAIL 1 in 0.82s]
-13:43:12  9 of 20 START test is_empty_fct_model_fanout_ .................................. [RUN]
-13:43:12  5 of 20 FAIL 1 is_empty_fct_exposure_parents_materializations_ ................. [FAIL 1 in 0.90s]
-13:43:12  10 of 20 START test is_empty_fct_model_naming_conventions_ ..................... [RUN]
-13:43:12  7 of 20 FAIL 7 is_empty_fct_missing_primary_key_tests_ ......................... [FAIL 7 in 0.73s]
-13:43:12  11 of 20 START test is_empty_fct_multiple_sources_joined_ ...................... [RUN]
-13:43:12  8 of 20 FAIL 1 is_empty_fct_model_directories_ ................................. [FAIL 1 in 0.97s]
-13:43:12  12 of 20 START test is_empty_fct_rejoining_of_upstream_concepts_ ............... [RUN]
-13:43:13  10 of 20 FAIL 1 is_empty_fct_model_naming_conventions_ ......................... [FAIL 1 in 0.65s]
-13:43:13  13 of 20 START test is_empty_fct_root_models_ .................................. [RUN]
-13:43:13  9 of 20 FAIL 1 is_empty_fct_model_fanout_ ...................................... [FAIL 1 in 0.77s]
-13:43:13  14 of 20 START test is_empty_fct_source_directories_ ........................... [RUN]
-13:43:13  11 of 20 FAIL 1 is_empty_fct_multiple_sources_joined_ .......................... [FAIL 1 in 0.65s]
-13:43:13  15 of 20 START test is_empty_fct_source_fanout_ ................................ [RUN]
-13:43:13  12 of 20 FAIL 1 is_empty_fct_rejoining_of_upstream_concepts_ ................... [FAIL 1 in 0.73s]
-13:43:13  16 of 20 START test is_empty_fct_staging_dependent_on_marts_or_intermediate_ ... [RUN]
-13:43:13  14 of 20 FAIL 3 is_empty_fct_source_directories_ ............................... [FAIL 3 in 0.66s]
-13:43:13  17 of 20 START test is_empty_fct_staging_dependent_on_staging_ ................. [RUN]
-13:43:13  13 of 20 FAIL 1 is_empty_fct_root_models_ ...................................... [FAIL 1 in 0.79s]
-13:43:13  18 of 20 START test is_empty_fct_test_directories_ ............................. [RUN]
-13:43:13  15 of 20 FAIL 2 is_empty_fct_source_fanout_ .................................... [FAIL 2 in 0.57s]
-13:43:13  19 of 20 START test is_empty_fct_undocumented_models_ .......................... [RUN]
-13:43:14  17 of 20 FAIL 1 is_empty_fct_staging_dependent_on_staging_ ..................... [FAIL 1 in 0.50s]
-13:43:14  20 of 20 START test is_empty_fct_unused_sources_ ............................... [RUN]
-13:43:14  16 of 20 FAIL 1 is_empty_fct_staging_dependent_on_marts_or_intermediate_ ....... [FAIL 1 in 0.64s]
-13:43:14  18 of 20 FAIL 2 is_empty_fct_test_directories_ ................................. [FAIL 2 in 0.71s]
-13:43:14  19 of 20 FAIL 7 is_empty_fct_undocumented_models_ .............................. [FAIL 7 in 0.77s]
-13:43:14  20 of 20 FAIL 1 is_empty_fct_unused_sources_ ................................... [FAIL 1 in 0.49s]
-13:43:14  
+
+... 省略 ...
+
 13:43:14  Finished running 20 tests in 0 hours 0 minutes and 7.99 seconds (7.99s).
 13:43:14  
 13:43:14  Completed with 20 errors and 0 warnings:
-13:43:14  
-13:43:14  Failure in test is_empty_fct_direct_join_to_source_ (models/marts/dag/dag.yml)
-13:43:14    Got 2 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_direct_join_to_source_.sql
-13:43:14  
-13:43:14  Failure in test dbt_utils_accepted_range_fct_chained_views_dependencies_distance__False___var_chained_views_threshold_ (models/marts/performance/performance.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/performance/performance.yml/dbt_utils_accepted_range_fct_c_f4e4ed7d4720ea1b89a90d20835948ae.sql
-13:43:14  
-13:43:14  Failure in test dbt_utils_accepted_range_fct_test_coverage_test_coverage_pct___var_test_coverage_target_ (models/marts/tests/testing.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/tests/testing.yml/dbt_utils_accepted_range_fct_t_2fb17cd478c8bb66913b01eb1c42e454.sql
-13:43:14  
-13:43:14  Failure in test dbt_utils_accepted_range_fct_documentation_coverage_documentation_coverage_pct___var_documentation_coverage_target_ (models/marts/documentation/documentation.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/documentation/documentation.yml/dbt_utils_accepted_range_fct_d_60fa1e42bcaed7ea1fca15068fe7952f.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_marts_or_intermediate_dependent_on_source_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_marts_or_intermediate_dependent_on_source_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_exposure_parents_materializations_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_exposure_parents_materializations_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_missing_primary_key_tests_ (models/marts/tests/testing.yml)
-13:43:14    Got 7 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/tests/testing.yml/is_empty_fct_missing_primary_key_tests_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_model_directories_ (models/marts/structure/structure.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/structure/structure.yml/is_empty_fct_model_directories_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_model_naming_conventions_ (models/marts/structure/structure.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/structure/structure.yml/is_empty_fct_model_naming_conventions_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_model_fanout_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_model_fanout_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_multiple_sources_joined_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_multiple_sources_joined_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_rejoining_of_upstream_concepts_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_rejoining_of_upstream_concepts_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_source_directories_ (models/marts/structure/structure.yml)
-13:43:14    Got 3 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/structure/structure.yml/is_empty_fct_source_directories_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_root_models_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_root_models_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_source_fanout_ (models/marts/dag/dag.yml)
-13:43:14    Got 2 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_source_fanout_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_staging_dependent_on_staging_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_staging_dependent_on_staging_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_staging_dependent_on_marts_or_intermediate_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_staging_dependent_on_marts_or_intermediate_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_test_directories_ (models/marts/structure/structure.yml)
-13:43:14    Got 2 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/structure/structure.yml/is_empty_fct_test_directories_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_undocumented_models_ (models/marts/documentation/documentation.yml)
-13:43:14    Got 7 results, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/documentation/documentation.yml/is_empty_fct_undocumented_models_.sql
-13:43:14  
-13:43:14  Failure in test is_empty_fct_unused_sources_ (models/marts/dag/dag.yml)
-13:43:14    Got 1 result, configured to fail if != 0
-13:43:14  
-13:43:14    compiled Code at target/compiled/dbt_project_evaluator/models/marts/dag/dag.yml/is_empty_fct_unused_sources_.sql
-13:43:14  
+
+... 省略 ...
+
 13:43:14  Done. PASS=0 WARN=0 ERROR=20 SKIP=0 TOTAL=20
 ```
 
 20個の観点についてチェックしているのですが、`Completed with 20 errors and 0 warnings:` と出ているので、漏れなく検知できているようです。
-実行時間もこのテーブル数なら数秒で、CIに組み込むことも難しくは無さそうでした。
-※dbt-project-evaluator の実行だけであれば、検査対象の project をビルドせず、クエリもしない。
-
+dbt-project-evaluator の実行だけであれば、検査対象の project をビルドせず、クエリもしないため、実行時間も数秒でした。
 
 ## プロジェクトの修正
 
@@ -236,15 +105,14 @@ $ poetry run dbt test --select package:dbt_project_evaluator
 
 プロジェクトの修正に入る前に、dbt project evaluator の仕組みと使い方を簡単に紹介します。
 
-dbt project evaluator は、model の依存関係を解決し、親テーブルと子テーブルを関係を表現した DAG テーブルを作ります。
-
-{{ dag テーブルのサンプル }}
-
-このテーブルをベースとして、親・子テーブルの種類や数、多段 view の段数、ドキュメンテーションの状況などを解析し、違反している場合は、解析結果をまとめたテーブルを作ります。
-
-最後に、解析結果をまとめたテーブルの行数が 0行以上でないかを dbt test でチェックしています。
+1. dbt project evaluator は、model の依存関係を解決し、親テーブルと子テーブルを関係を表現した DAG テーブルを作ります。
+1. このテーブルをベースとして、親・子テーブルの種類や数、多段 view の段数、ドキュメンテーションの状況などを解析し、違反している場合は、解析結果をまとめたテーブルを作ります。
+1. 最後に、解析結果をまとめたテーブルの行数が 0行以上でないかを dbt test でチェックしています。
 
 つまり、dbt project evaluator で出てきた dbt test のコンパイルクエリを使えば、解析結果のテーブルにアクセスし、エラーとなっている箇所を特定できます。これを使って修正して行きます。
+
+<実際の解析テーブル: ファイルを配置しているパスが不適切と検知された場合>
+![](/images/project-evaluator/analytics-table.png)
 
 早速エラーを解決して行きます。
 
@@ -267,11 +135,13 @@ Source 側にスキーマ変更があった場合、不用意に参照してい�
     from `dbt_ga4_project_evaluator`.`fct_direct_join_to_source`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/direct-join-table.png)
 
 parent = page_display_names とあるので、page_display_names が関連するテーブルと思われます。
 ※実行結果のテーブルの見方が少し難しいかもしれません。
 dbt docs で確認すると、確かに子テーブルの一つである、rpt_access_count_by_page が内部で page_display_names を join してることがわかります。
+
+![](/images/project-evaluator/direct-join-image.png)
 
 page_display_names は staging 層にあらかじめ定義した stg_page_display_names で置き換えできそうなので、変更します。
 
