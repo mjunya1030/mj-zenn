@@ -12,6 +12,8 @@ dbt Labs では、dbt のプロジェクト、並びに変換パイプライン�
 さらに、いくつかのベストプラクティスについては、自動で評価可能な dbt project evaluator というツールも公開されています。
 今回は、dbt project evaluator で評価可能な、20 個のベストプラクティスを全て「違反」した dbt プロジェクトを１から作成し、このツールを当てて評価した上で、修正をかけました。
 実際にツールがうまく検知してくれるのかを確認し、検知された項目を修正する場合の手続きとその難所や、現実的な運用方法をまとめています。
+
+※この記事は dbtアドベントカレンダー2022 の 12/10 分の記事です。
 ## dbt project evaluator について
 
 dbt labs 謹製のパッケージです。
@@ -74,6 +76,7 @@ https://github.com/mjunya1030/ga4-dbt-template
 ![](/images/project-evaluator/pipeline-after.png)
 
 修正の流れを次の章から解説して行きます。
+長くなるため、先にサマリーを把握されたい方は、「実際のプロジェクトに適用する際のポイント」まで飛ばしてお読みください。
 
 ## dbt project evaluator の適用
 
@@ -129,7 +132,7 @@ Source 側にスキーマ変更があった場合、不用意に参照してい�
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
     select *
@@ -183,7 +186,7 @@ staging を介さずに参照されている source テーブルがあること�
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
 select *
@@ -229,7 +232,7 @@ Configuration file exists at /Users/moritajunya/Library/Application Support/pypo
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
 select *
@@ -275,7 +278,7 @@ staging 層のテーブルはモデリングの源流となるので、可能な
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
 select *
@@ -306,7 +309,7 @@ Configuration file exists at /Users/moritajunya/Library/Application Support/pypo
 
 無事 test が通りました。
 また、この修正によって、後述する Souce Fanout も解決されてしまいました。
-こちらも source テーブルの扱いに関する観点なので、どちらかを治すと両方改善されることは起こりやすそうです。
+
 
 
 ### Rejoining of Upstream Concepts
@@ -323,7 +326,7 @@ Configuration file exists at /Users/moritajunya/Library/Application Support/pypo
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
 select *
@@ -333,8 +336,8 @@ from `dbt_ga4_project_evaluator`.`fct_rejoining_of_upstream_concepts`
 ![](/images/project-evaluator/fct_rejoining_of_upstream_concepts_table.png)
 
 結果のテーブルは比較的わかりやすいです。
-parent_and_child = rpt_device_summary となっているので、これが不要なモジュールのようです。。
-親か子のどちらかのクエリに混ぜてしまおうと思います。
+parent_and_child = rpt_device_summary となっているので、これら不要なモジュールのようです。
+rpt_device_summary に処理を寄せようと思います。
 
 ![](/images/project-evaluator/fct_rejoining_of_upstream_concepts_image.png)
 
@@ -360,7 +363,7 @@ $ poetry run dbt build --select package:dbt_project_evaluator,fct_rejoining_of_u
 
 無事 test が通りました。
 また、この修正によって、後述する Chained View Dependencies も解決されてしまいました。
-こちらもパフォーマンス観点のプラクティスなので、どちらかを治すと両方改善されることは起こりやすそうです。
+
 
 
 ### Root Models
@@ -376,7 +379,7 @@ dbt でリネージが追えなくなってしまうため、一貫性を失い�
 
 #### 修正
 
-早速コンパイルされたコードを実行します。
+解析用のテーブルを確認します。
 
 ```sql
 select *
@@ -771,6 +774,12 @@ $ poetry run dbt test --select package:dbt_project_evaluator
 このツールのチェックはかなり厳しい印象で、テーブル数がそこそこある一般的なプロジェクトで適用したら、ほとんどがエラーになると思います。
 というのも、ベストプラクティスとして守るべき観点と、ツールの設定に依存している観点が混在しているため、カスタマイズした状態で適用しないと、期待しないアラートが多数上がってしまいます。
 初期構築の際を除いて、チェックする観点を取捨選択して適用することが前提になりそうです。
+
+### 手戻りと実施順序
+今回の修正において、一つのアラートを直すと他のアラートも治る、といったことが多発しました。その一方で、片方のアラートを直すと別のアラート出る、といったことも起きました。
+手戻りなく進めるためには、順番を設計して適用していく必要がありそうです。
+不要なテーブルや処理を消すようなアクションに繋がりやすい、モデリング系のアラートから着手すると、削除したテーブルで発生していたアラートが消えるため、効率よく進むかもしれません。
+一方で、テーブルを新規で作るような変更を加えると、新しいアラートも発生するので。モデリング系のアラートは一気に対応する方が良さそうです。
 ### 適用すべき観点
 以下にあげる、staging に関連するテストは積極的にチェックするのが望ましいと思います。修正することで検知できる不具合が増え、また修正箇所も限定されるため効果的だと感じました。
 - Direct Join To Source
@@ -852,3 +861,10 @@ tests:
 
 int_all_dag_relationships を見ることで、親子関係の全てのDAGを見ることができるテーブルがあります。
 これを用いて、独自のチェック観点を作ることも可能です。
+
+## 終わりに
+この記事では、dbt labs が提唱するベストプラクティス20個を全て違反したプロジェクトを作成し、違反内容を dbt-project-evaluator というツールを使って評価した上で、評価結果を元に修正を行いました。
+修正作業は無理なく実施でき、ベストプラクティスに沿ったプロジェクトに是正できました。
+実際のプロジェクトに適用する場合に備えて、カスタマイズの方法と効率よく進めるための適用順も記載しました。
+
+dbt のプロジェクト設計に従事されてる方の参考になれば嬉しいです。
