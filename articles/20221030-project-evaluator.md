@@ -119,7 +119,7 @@ dbt-project-evaluator の実行だけであれば、検査対象の project を�
 <実際の解析テーブル: ファイルを配置しているパスが不適切と検知された場合>
 ![](/images/project-evaluator/analytics-table.png)
 
-早速エラーを解決して行きます。
+この解析テーブルを使って、エラーを解決して行きます。
 
 ### Direct Join To Source
 
