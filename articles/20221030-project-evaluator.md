@@ -54,14 +54,15 @@ https://github.com/dbt-labs/dbt-project-evaluator
 
 ## 事前準備と修正結果
 
-早速プロジェクトを作成しました。ベストプラクティスを読んだ上で、全部違反している project がこちらです。20個のベストプラクティスにどう違反してるかの対応も記載しています。
-
-
-![](/images/project-evaluator/pipeline-before.png)
-![](/images/project-evaluator/pipeline-before-2.png)
+20個のベストプラクティスを全部違反している project を作りました。
 
 <参考リポジトリ>
 https://github.com/mjunya1030/ga4-dbt-template
+
+各種ベスぷらに対して、どこに違反してるかの対応は以下の通りです。
+
+![](/images/project-evaluator/pipeline-before.png)
+![](/images/project-evaluator/pipeline-before-2.png)
 
 
 このパイプラインは、GA4のアクセスログをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理を仮定して作成しています。
@@ -71,7 +72,7 @@ https://github.com/mjunya1030/ga4-dbt-template
 
 ## 修正結果
 
-下図が dbt-project-evaluator を用いて修正をした後のパイプラインです。テーブルの数が減って、シンプルになったと思いますが、いかがでしょうか。
+下図が dbt-project-evaluator を用いて評価し、指示に従って修正をした後のパイプラインです。テーブルの数が減って、シンプルになったと思いますが、いかがでしょうか。
 
 ![](/images/project-evaluator/pipeline-after.png)
 
