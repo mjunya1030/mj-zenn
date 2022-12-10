@@ -10,9 +10,8 @@ published: false # 公開設定（falseにすると下書き）
 
 dbt Labs では、dbt のプロジェクト、並びに変換パイプラインに関するベストプラクティスを紹介しています。
 さらに、いくつかのベストプラクティスについては、自動で評価可能な dbt project evaluator というツールも公開されています。
-今回は、dbt project evaluator で評価可能な、20 個のベストプラクティスを全て「違反」した dbt プロジェクトを１から作成し、このツールを当てて評価した上で、修正をかけようと思います。
-実際にツールがうまく検知してくれるのか、そして修正する上で有用なものかを検証してみたいと思います。
-
+今回は、dbt project evaluator で評価可能な、20 個のベストプラクティスを全て「違反」した dbt プロジェクトを１から作成し、このツールを当てて評価した上で、修正をかけました。
+実際にツールがうまく検知してくれるのかを確認し、検知された項目を修正する場合の手続きとその難所や、現実的な運用方法をまとめています。
 ## dbt project evaluator について
 
 dbt labs 謹製のパッケージです。
@@ -56,15 +55,14 @@ https://github.com/dbt-labs/dbt-project-evaluator
 早速プロジェクトを作成しました。ベストプラクティスを読んだ上で、全部違反している project がこちらです。
 
 {{ docs の絵 }}
-
-以下から詳細の構成を把握できます
+<参考リポジトリ>
 https://github.com/mjunya1030/ga4-dbt-template
 
 
 このパイプラインは、この zenn のアクセスログを解析している Google Analytics のログを BigQuery に蓄積したものをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理です。
 やりたいことはシンプルですが、全て違反するように作ったため、かなり見辛いパイプラインになってることが直感的にわかります。
 
-20個のベストプラクティスにどう違反してるか？の対応は以下のようになっています。
+20個のベストプラクティスにどう違反してるかの対応は以下のようになっています。
 
 {{ slide の絵 }}
 
@@ -229,10 +227,9 @@ $ poetry run dbt test --select package:dbt_project_evaluator
 13:43:14  Done. PASS=0 WARN=0 ERROR=20 SKIP=0 TOTAL=20
 ```
 
-とても綺麗に失敗してますね。
-20個の観点についてチェックしているのですが、しっかり `Completed with 20 errors and 0 warnings:` と出ているので、漏れなく検知できているようです。
-実行時間もこのテーブル数なら数秒で、CIに組み込むことも難しくは無さそうです。
-検査対象のproject をビルドせず、クエリもしないため、テーブルサイズ等も関係なさそうです。
+20個の観点についてチェックしているのですが、`Completed with 20 errors and 0 warnings:` と出ているので、漏れなく検知できているようです。
+実行時間もこのテーブル数なら数秒で、CIに組み込むことも難しくは無さそうでした。
+※dbt-project-evaluator の実行だけであれば、検査対象の project をビルドせず、クエリもしない。
 
 
 ## プロジェクトの修正
@@ -274,7 +271,8 @@ Source 側にスキーマ変更があった場合、不用意に参照してい�
 
 {{ 実行結果の画像 }}
 
-なかなかわかりにくいですが、parent = page_display_names とあるので、page_display_names が関連するテーブルと思われます。
+parent = page_display_names とあるので、page_display_names が関連するテーブルと思われます。
+※実行結果のテーブルの見方が少し難しいかもしれません。
 dbt docs で確認すると、確かに子テーブルの一つである、rpt_access_count_by_page が内部で page_display_names を join してることがわかります。
 
 page_display_names は staging 層にあらかじめ定義した stg_page_display_names で置き換えできそうなので、変更します。
@@ -301,7 +299,7 @@ $ poetry run dbt build --select package:dbt_project_evaluator,+fct_direct_join_t
 ```
 
 無事 test が通りました。
-ただ、プロジェクトの構成が適正になっただけで、変更前後でデータの値が変わっている可能性はあります。
+ただし、変更前後でデータの値が変わっている可能性はあります。
 ここは dbt build でデータが変わってないか等も確認する必要はあります。今回は合っているものとして次に進みます。
 
 
@@ -327,9 +325,8 @@ from `dbt_ga4_project_evaluator`.`fct_marts_or_intermediate_dependent_on_source`
 
 {{ 実行結果の画像 }}
 
-ベストプラクティスの観点から解析結果のテーブル名が推測しずらいので注意ですが、結果のテーブルは比較的わかりやすいです。
-child = dim_pages とあるので dim_pages が関連するテーブルと思われます。
-dbt docs で確認すると、確かに親テーブルの一つが source の page_display_names を 直接参照 してることがわかります。
+結果のテーブルは比較的わかりやすいです。
+child = dim_pages とあるので dbt docs で確認すると、dim_pages が source の page_display_names を 直接参照 してることがわかります。
 
 page_display_names は staging 層にあらかじめ定義した stg_page_display_names で置き換えできそうなので、変更します。
 
@@ -914,8 +911,32 @@ $ poetry run dbt test --select package:dbt_project_evaluator
 無事、20個全ての test が成功しています。
 
 
-## 注意
+## 実際のプロジェクトに適用する際のポイント
 
+### 適用すべきフェーズ
+このツールのチェックはかなり厳しい印象で、テーブル数がそこそこある一般的なプロジェクトで適用したら、ほとんどがエラーになると思います。
+というのも、ベストプラクティスとして守るべき観点と、ツールの設定に依存している観点が混在しているため、カスタマイズした状態で適用しないと、期待しないアラートが多数上がってしまいます。
+初期構築の際を除いて、チェックする観点を取捨選択して適用することが前提になりそうです。
+### 適用すべき観点
+以下にあげる、staging に関連するテストは積極的にチェックするのが望ましいと思います。修正することで検知できる不具合が増え、また修正箇所も限定されるため効果的だと感じました。
+- Direct Join To Source
+- Downstream Models Dependent on Source
+- Root Models
+- Unused Sources
+- Missing Primary Key Tests
+
+一方で、modelの修正を余儀なくされてしまう観点については、修正範囲が広く、今あるクエリを修正するというよりは、新しく作ったクエリを汚さないための仕組みと捉えたほうが良いかもしれません。
+- Model Fanout
+- Sourve Fanout
+- Rejoining of Upstream Concepts
+
+また、ディレクトリ構成やテーブル命名については、設定に依存する部分が大きいため、適用する前に自分たちのプロジェクトに合わせてカスタムする必要があります。これも、修正するというよりは、project evaluator の設定を自分たちの構成に寄せるような使い方になると思います。
+- Model Naming Conventions
+- Model Directories
+- Source Directories
+- Test Directories
+
+※特定の観点のみチェックする場合は、dbt test コマンドにセレクタをつけて実行します。dbt seed を使って、テーブルxテスト観点の単位で除外リストを作成することもできます。
 ### データセットの分割
 
 project evaluator は、解析に使うテーブルを多数生成します。
@@ -975,61 +996,5 @@ tests:
 
 ### その他
 
-親子関係のDAGを見ることができます。
-
-int_all_dag_relationships
-
-dbt docs よりも状態把握に使えるかもしれません。
-
-## 例外出してみた
-
-### model_naming_conventions
-モデルにちゃんと接頭辞つけないといけないというもの。
-接頭辞の種類は stg_naming_convention_prefixes というクエリで定義されていて、帰るならオーバーライドしないといけない。
-
-### source_directries
-どんなディレクトリにしたらいいのかは、 `fct_source_directories` に出てくる。
-https://github.com/dbt-labs/dbt-project-evaluator#overriding-variables
-
-もちろんオーバーライドできる
-
-```
-vars:
-  dbt_project_evaluator:
-    model_types: ['staging', 'intermediate', 'marts', 'other', 'util']
-    util_folder_name: 'util'
-    util_prefixes: ['util_']
-```
-
-### fanout
-tableau と looker で違うっぽい
-
-```
-BI ツールによっては、結合やデータ探索に優れているものもある。例えば、Lookerでは、マート（つまり、fctsとdims）の後にDAGを終了し、これらのアーティファクトを結合して（少しのノウハウと設定時間があれば）レポートを作成することができます。Tableauのような他のツールでは、モデルのファンアウトがより有益かもしれません。このツールは結合よりも大きなテーブルを好むため、いくつかのレポートを事前に定義することが通常よりパフォーマンス的に優れています。
-```
-
-
-### Multiple Sources Joined
-
-```
-私たちは、ステージングモデルがデータモデリングの原子単位であると強く信じています。各ステージング・モデルは、それが表すソース・データ・テーブルと一対一の関係を持ちます。同じ粒度ですが、カラムの名前は変更され、再キャストされ、あるいは有用な形で一貫性のあるフォーマットに再考されています。このことを考えると、1つのステージングモデルに2つの{{ source() }}が宣言されているということは、十分にコンポーザブルでない可能性が高く、それぞれのモデルに分割できる個々のビルディングブロックが存在することを意味します。
-```
-
-
-### Rejoining of Upstream Concepts
-
-```
-親の直接の子のひとつが、親の直接の子の別のひとつの直接の子にならないようにします。ただし、他の下流の依存関係を持つ場合は許容します。
-```
-
-### primary key
-サロゲートキーつけるのがおすすめで、dbt util にあるよ
-
-
-## そのほか
-
-コメントアウトしても、そのクエリは評価されてしまうみたい
-
-increment や view など、materialization についての評価はできないみたい
-
-AテーブルとBテーブルで同じカラム名を違う定義で使ってるなど、カラムレベルの評価はできないみたい。
+int_all_dag_relationships を見ることで、親子関係の全てのDAGを見ることができるテーブルがあります。
+これを用いて、独自のチェック観点を作ることも可能です。
