@@ -62,7 +62,8 @@ https://github.com/dbt-labs/dbt-project-evaluator
 https://github.com/mjunya1030/ga4-dbt-template
 
 
-このパイプラインは、この zenn のアクセスログを解析している Google Analytics のログを BigQuery に蓄積したものをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理です。
+このパイプラインは、GA4のアクセスログをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理を仮定して作成しています。
+実際のデータセット名やテーブル名はダミーなので、dbt run は実行できません。
 やりたいことはシンプルですが、全て違反するように作ったため、かなり見辛いパイプラインになってると思います。
 
 
@@ -144,8 +145,6 @@ dbt docs で確認すると、確かに子テーブルの一つである、rpt_a
 ![](/images/project-evaluator/direct-join-image.png)
 
 page_display_names は staging 層にあらかじめ定義した stg_page_display_names で置き換えできそうなので、変更します。
-
-{{ github のコミットの画像 }}
 
 
 ```
@@ -435,6 +434,13 @@ source から 3つ以上の staging 層のテーブルが生成されている�
 
 #### 修正
 
+```
+select *
+from `dbt_ga4_project_evaluator`.`fct_source_fanout`
+```
+
+parent = page_display_names の子テーブルが多数ありそうです。source を一つの staging テーブルで参照するように修正します。
+
 ※このエラーは前述の操作で解決したので、省略します。
 
 
@@ -537,7 +543,7 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_missing_primary_key_tests`
 ```
 
-resource_name = fct_dim_events_with_pages,stg_events,rpt_access_count_by_date とあるので、これらにテストを記載しつつ、ドキュメントも拡充します。
+resource_name = fct_dim_events_with_pages,stg_events,rpt_access_count_by_date... とあるので、これらにテストを記載しつつ、ドキュメントも拡充します。
 
 {{ コミットの画像 }}
 
@@ -564,51 +570,6 @@ $ poetry run dbt test --select package:dbt_project_evaluator,+fct_missing_primar
 不要なテーブルの削除等は Modeling の観点で実施していたため、testを記載するべき対象が少なく済みました。
 
 
-### Structure
-
-ディレクトリを修正します。
-
-
-#### 修正
-
-```
-select *
-from `dbt_ga4_project_evaluator`.`fct_source_directories`;
-
-select *
-from `dbt_ga4_project_evaluator`.`fct_test_directories`;
-
-select *
-from `dbt_ga4_project_evaluator`.`fct_model_directories`;
-
-```
-
-change_file_path_to とあるカラムに、適正と思われるファイルパスが記載されてます。
-この通り修正して行きます。
-
-{{ コミットの画像 }}
-
-```
-$ poetry run dbt test --select package:dbt_project_evaluator,+fct_missing_primary_key_tests +fct_test_coverage +fct_documentation_coverage
-15:57:55  Found 42 models, 38 tests, 0 snapshots, 0 analyses, 560 macros, 0 operations, 1 seed file, 2 sources, 1 exposure, 0 metrics
-15:57:55  
-15:57:57  Concurrency: 4 threads (target='target')
-15:57:57  
-15:57:57  1 of 3 START test dbt_utils_accepted_range_fct_documentation_coverage_documentation_coverage_pct___var_documentation_coverage_target_  [RUN]
-15:57:57  2 of 3 START test dbt_utils_accepted_range_fct_test_coverage_test_coverage_pct___var_test_coverage_target_  [RUN]
-15:57:57  3 of 3 START test is_empty_fct_missing_primary_key_tests_ ...................... [RUN]
-15:57:58  3 of 3 PASS is_empty_fct_missing_primary_key_tests_ ............................ [PASS in 0.94s]
-15:57:58  1 of 3 PASS dbt_utils_accepted_range_fct_documentation_coverage_documentation_coverage_pct___var_documentation_coverage_target_  [PASS in 0.98s]
-15:57:58  2 of 3 PASS dbt_utils_accepted_range_fct_test_coverage_test_coverage_pct___var_test_coverage_target_  [PASS in 1.20s]
-15:57:58  
-15:57:58  Finished running 3 tests in 0 hours 0 minutes and 2.77 seconds (2.77s).
-15:57:58  
-15:57:58  Completed successfully
-15:57:58  
-15:57:58  Done. PASS=3 WARN=0 ERROR=0 SKIP=0 TOTAL=3
-```
-
-
 
 ### Model Naming Conventions
 
@@ -622,8 +583,12 @@ dbt_project.yml でこれらの値は  override できるので、接頭辞を�
 
 #### 修正
 
-modeling の修正によって対象となるテーブルが削除されたため、今回の修正は不要となりました。
+```
+select *
+from `dbt_ga4_project_evaluator`.`fct_model_naming_conventions`
+```
 
+resource_name = access_count_by_device とあり、appropriate_prefixes = rpt_ となっているので、rpt_access_count_by_device とします。
 
 ### Directory Structure
 
@@ -692,7 +657,14 @@ $ poetry run dbt test --select package:dbt_project_evaluator,+fct_missing_primar
 
 #### 修正
 
-modeling の修正によって対象となるテーブルが削除されたため、今回の修正は不要となりました。
+```
+select *
+from `dbt_ga4_project_evaluator`.`fct_chained_views_dependencies`
+```
+
+rpt_device_summary_with_uu の distance が 5 と出ているため、これを修正します。
+
+※ model の修正によってすでに解決されたため、修正内容は省略します。
 
 
 ### Exposure Parents Materializations
