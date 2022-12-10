@@ -190,14 +190,14 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_marts_or_intermediate_dependent_on_source`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/fct_marts_or_intermediate_dependent_on_source_table.png)
 
 結果のテーブルは比較的わかりやすいです。
 child = dim_pages とあるので dbt docs で確認すると、dim_pages が source の page_display_names を 直接参照 してることがわかります。
 
 page_display_names は staging 層にあらかじめ定義した stg_page_display_names で置き換えできそうなので、変更します。
 
-{{ github のコミットの画像 }}
+![](/images/project-evaluator/fct_marts_or_intermediate_dependent_on_source_image.png)
 
 
 ```
@@ -236,13 +236,13 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_model_fanout`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/fct_model_fanout_table.png)
 
 結果のテーブルは比較的わかりやすいです。
 parent = fct_events とあるので fct_events が関連するテーブルで、rpt_device_access_* と続くテーブルたちが不要であることが推察されます。
 pv,uu,session について一つのテーブルにまとめた rpt_device_summary_with_uu がすでにあるので、これらは不要とし、削除してしまいます。
 
-{{ github のコミットの画像 }}
+![](/images/project-evaluator/fct_model_fanout_image.png)
 
 
 ```
@@ -282,13 +282,13 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_multiple_sources_joined`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/fct_multiple_sources_joined_table.png)
 
 結果のテーブルは比較的わかりやすいです。
 child = stg_events_and_names で、source_parents = {analytics_272722196.events_*, analytics_272722196.page_display_names} とあるので、この2つを join してることが原因と思われます。
 stg_events_and_names は定義しているが下流で使っていないので、削除してしまいます。
 
-{{ github のコミットの画像 }}
+![](/images/project-evaluator/fct_multiple_sources_joined_image.png)
 
 
 ```
@@ -330,13 +330,13 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_rejoining_of_upstream_concepts`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/fct_rejoining_of_upstream_concepts_table.png)
 
 結果のテーブルは比較的わかりやすいです。
 parent_and_child = rpt_device_summary となっているので、これが不要なモジュールのようです。。
 親か子のどちらかのクエリに混ぜてしまおうと思います。
 
-{{ github のコミットの画像 }}
+![](/images/project-evaluator/fct_rejoining_of_upstream_concepts_image.png)
 
 
 ```
@@ -383,12 +383,12 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_root_models`
 ```
 
-{{ 実行結果の画像 }}
+![](/images/project-evaluator/fct_root_models_table.png)
 
 
 child = access_count_by_device となっているので、これの参照テーブルを修正します。
 
-{{ github のコミットの画像 }}
+![](/images/project-evaluator/fct_root_models_image.png)
 
 
 ```
@@ -439,7 +439,11 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_source_fanout`
 ```
 
+![](/images/project-evaluator/fct_source_fanout_table.png)
+
 parent = page_display_names の子テーブルが多数ありそうです。source を一つの staging テーブルで参照するように修正します。
+
+![](/images/project-evaluator/fct_source_fanout_image.png)
 
 ※このエラーは前述の操作で解決したので、省略します。
 
@@ -468,9 +472,11 @@ from `dbt_ga4_project_evaluator`.`fct_staging_dependent_on_staging`
 
 ```
 
+![](/images/project-evaluator/fct_staging_dependent_table.png)
+
 child = stg_access_count_by_date とあるので、このテーブルの命名を変更して対応します。
 
-{{ コミットの画像 }}
+![](/images/project-evaluator/fct_staging_dependent_image.png)
 
 ```
 $ poetry run dbt build --select package:dbt_project_evaluator,+fct_staging_dependent_on_staging +fct_staging_dependent_on_marts_or_intermediate
@@ -508,9 +514,11 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_unused_sources`
 ```
 
+![](/images/project-evaluator/fct_unused_sources_table.png)
+
 parent = article_types とあるので、これが使われていない source のようです。yamlファイルから消すことにします。
 
-{{ コミットの画像 }}
+![](/images/project-evaluator/fct_unused_sources_image.png)
 
 ```
 $ poetry run dbt test --select package:dbt_project_evaluator,+fct_unused_sources
@@ -543,9 +551,10 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_missing_primary_key_tests`
 ```
 
+![](/images/project-evaluator/fct_missing_primary_key_tests_table.png)
+
 resource_name = fct_dim_events_with_pages,stg_events,rpt_access_count_by_date... とあるので、これらにテストを記載しつつ、ドキュメントも拡充します。
 
-{{ コミットの画像 }}
 
 ```
 $ poetry run dbt test --select package:dbt_project_evaluator,+fct_missing_primary_key_tests +fct_test_coverage +fct_documentation_coverage
@@ -588,7 +597,11 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_model_naming_conventions`
 ```
 
+![](/images/project-evaluator/fct_model_naming_conventions_table.png)
+
 resource_name = access_count_by_device とあり、appropriate_prefixes = rpt_ となっているので、rpt_access_count_by_device とします。
+
+※対象のテーブルは modeling の修正で対応ずみのため、修正内容は省略します。
 
 ### Directory Structure
 
@@ -628,7 +641,7 @@ from `dbt_ga4_project_evaluator`.`fct_model_directories`;
 change_file_path_to とあるカラムに、適正と思われるファイルパスが記載されてます。
 この通り修正して行きます。
 
-{{ コミットの画像 }}
+![](/images/project-evaluator/fct_source_directories_table.png)
 
 ```
 $ poetry run dbt test --select package:dbt_project_evaluator,+fct_missing_primary_key_tests +fct_test_coverage +fct_documentation_coverage
@@ -662,6 +675,8 @@ select *
 from `dbt_ga4_project_evaluator`.`fct_chained_views_dependencies`
 ```
 
+![](/images/project-evaluator/fct_chained_views_dependencies_table.png)
+
 rpt_device_summary_with_uu の distance が 5 と出ているため、これを修正します。
 
 ※ model の修正によってすでに解決されたため、修正内容は省略します。
@@ -684,10 +699,9 @@ Exposure とは外部から利用で切るように定義されたモデルで�
 select *
 from `dbt_ga4_project_evaluator`.`fct_exposure_parents_materializations`
 ```
+![](/images/project-evaluator/fct_exposure_parents_materializations_table.png)
 
 parent_model_name = fct_dim_events_with_pages とあるので、このテーブルの materialization を table に変更します。
-
-{{ コミットの画像 }}
 
 この修正によって、全ての test が解決するはずです。
 改めてテストを実行してみます。
