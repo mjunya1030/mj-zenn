@@ -52,24 +52,22 @@ https://github.com/dbt-labs/dbt-project-evaluator
 
 ## 事前準備
 
-早速プロジェクトを作成しました。ベストプラクティスを読んだ上で、全部違反している project がこちらです。
+早速プロジェクトを作成しました。ベストプラクティスを読んだ上で、全部違反している project がこちらです。20個のベストプラクティスにどう違反してるかの対応も記載しています。
 
-{{ docs の絵 }}
+
+![](/images/project-evaluator/pipeline-before.png)
+
 <参考リポジトリ>
 https://github.com/mjunya1030/ga4-dbt-template
 
 
 このパイプラインは、この zenn のアクセスログを解析している Google Analytics のログを BigQuery に蓄積したものをソースデータとし、デバイスやページごとにUU数やPV数を出すテーブルを生成する処理です。
-やりたいことはシンプルですが、全て違反するように作ったため、かなり見辛いパイプラインになってることが直感的にわかります。
-
-20個のベストプラクティスにどう違反してるかの対応は以下のようになっています。
-
-{{ slide の絵 }}
+やりたいことはシンプルですが、全て違反するように作ったため、かなり見辛いパイプラインになってると思います。
 
 
 ## dbt project evaluator の適用
 
-dbt projeect evaluator を適用してみます。
+違反しているパイプラインに dbt projeect evaluator を適用してみます。
 
 ```sh
 $ poetry run dbt test --select package:dbt_project_evaluator
