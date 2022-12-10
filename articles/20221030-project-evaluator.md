@@ -63,7 +63,7 @@ dbt Labs にはサポートチームが存在し、数多くの案件でコン�
 <参考リポジトリ>
 https://github.com/mjunya1030/ga4-dbt-template
 
-各種ベスぷらに対して、どこに違反してるかの対応は以下の通りです。
+各種ベストプラクティスに対して、どこに違反してるかの対応は以下の通りです。
 
 ![](/images/project-evaluator/pipeline-before.png)
 ![](/images/project-evaluator/pipeline-before-2.png)
