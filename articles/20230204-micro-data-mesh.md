@@ -63,9 +63,8 @@ mart 層に、ユーザーのCVを記録した cv_events テーブルがあり�
 
 ![daily_user_cv の パイプライン](/images/20230204-micro-data-mesh/cv_events.png)
 
-新たに、商品毎の CV 数を分析することになりました。
-cv_events を商品毎に集計し、 daily_products_cv というテーブルを作ることにしました。
-ユーザーのCV数の分析と違うのは、更新タイミングでした。新商品がサイトに反映されるのは毎朝10時だったので、商品が切り替わる前のデータで分析できるよう、 cv_events と daily_cv_products は 10 時にバッチで更新することにしました。
+ここで新たに、商品毎の CV 数を分析することにします。cv_events を商品毎に集計し、 daily_products_cv というテーブルを作ることにしました。
+しかし、ユーザーのCV数の分析と違い、更新タイミングが0時ではなく、10時でした。新商品がサイトに反映されるのは毎朝10時だったためです。そこで、商品が切り替わる前のデータで分析できるよう、 cv_events と daily_cv_products は 10 時にバッチで更新することにしました。
 
 
 ![daily_products_cv の パイプライン](/images/20230204-micro-data-mesh/daily_products_cv.png)
